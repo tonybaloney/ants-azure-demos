@@ -5,7 +5,7 @@
       "name": "myblob",
       "type": "blobTrigger",
       "direction": "in",
-      "path": "samples-workitems/{name}",
+      "path": "ais/{name}.xlsx",
       "connection": "anthonyshawstorage_STORAGE"
     }
   ]
