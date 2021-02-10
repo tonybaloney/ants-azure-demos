@@ -18,7 +18,12 @@ def camelKey(k):
 
 
 def map_postcode(postcode):
-    postcode = int(postcode)
+    if pandas.isna(postcode):
+        return ""
+    try:
+        postcode = int(postcode.replace("o", "0"))
+    except ValueError:  # Must be some other junk value
+        return ""
     if (
         (1000 <= postcode <= 1999)
         or (2000 <= postcode <= 2599)
@@ -61,16 +66,85 @@ def main(myblob: func.InputStream):
 
     df.dropna(subset=["ABN"], inplace=True)  # Remove entries with no ABN
 
-    df["Town_City"] = df["Town_City"].apply(
-        lambda x: str(x).title()
-    )  # Title case all city names
-    df["Reporting_hours___Paid"].fillna(
-        0, inplace=True
-    )  # Replace empty reporting hours with zero
+    df["Town_City"] = df["Town_City"].apply(lambda x: str(x).title())
+    df["Reporting_hours___Paid"].fillna(0, inplace=True)
     df["Reporting_hours___Unpaid"].fillna(0, inplace=True)
     df["Reporting_hours___Total"].fillna(0, inplace=True)
-
-    df["State"] = df["Postcode"].apply(map_postcode)  # Calculate the postcode
+    check_columns = (
+        "Operates_in_ACT",
+        "Operates_in_NSW",
+        "Operates_in_NT",
+        "Operates_in_QLD",
+        "Operates_in_SA",
+        "Operates_in_TAS",
+        "Operates_in_VIC",
+        "Operates_in_WA",
+        "Relief_of_poverty_sickness_or_the_needs_of_the_aged",
+        "The_advancement_of_education",
+        "The_advancement_of_religion",
+        "The_provision_of_child_care_services",
+        "Other_purposes_beneficial_to_the_community",
+        "BASIC_RELIGIOUS",
+        "Conducted_Activities",
+        "Animal_Protection",
+        "Aged_Care_Activities",
+        "Civic_and_advocacy_activities",
+        "Culture_and_arts",
+        "Economic_social_and_community_development",
+        "Emergency_Relief",
+        "Employment_and_training",
+        "Environmental_activities",
+        "Grant_making_activities",
+        "Higher_education",
+        "Hospital_services_and_rehabilitation_activities",
+        "Housing_activities",
+        "Income_support_and_maintenance",
+        "International_activities",
+        "Law_and_legal_services",
+        "Mental_health_and_crisis_intervention",
+        "Political_activities",
+        "Primary_and_secondary_education",
+        "Religious_activities",
+        "Research",
+        "Social_services",
+        "Sports",
+        "Other_Educations",
+        "other_health_service_delivery",
+        "Other_recreation_and_social_club_activity",
+        "Other",
+        "Aboriginal_or_TSI",
+        "Aged_Persons",
+        "Children",
+        "Communities_Overseas",
+        "Ethnic_Groups",
+        "Gay_Lesbian_Bisexual",
+        "General_Community_in_Australia",
+        "men",
+        "Migrants_Refugees_or_Asylum_Seekers",
+        "Pre_Post_Release_Offenders",
+        "People_with_Chronic_Illness",
+        "People_with_Disabilities",
+        "People_at_risk_of_homelessness",
+        "Unemployed_Persons",
+        "Veterans_or_their_families",
+        "Victims_of_crime",
+        "Victims_of_Disasters",
+        "Women",
+        "Youth",
+        "Other_charities",
+        "Other_beneficiaries_not_listed",
+        "Reporting_Obligations___ACT",
+        "Reporting_Obligations___NSW",
+        "Reporting_Obligations___NT",
+        "Reporting_Obligations___QLD",
+        "Reporting_Obligations___SA",
+        "Reporting_Obligations___TAS",
+        "Reporting_Obligations___VIC",
+        "Reporting_Obligations___WA",
+    )
+    for col in check_columns:
+        df[col].fillna(False, inplace=True)
+    df["State"] = df["Postcode"].apply(map_postcode)
 
     # Connect to Azure Table Store
     table_service = TableService(
