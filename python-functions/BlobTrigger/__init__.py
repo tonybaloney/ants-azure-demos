@@ -57,6 +57,11 @@ def main(myblob: func.InputStream):
         f"Name: {myblob.name}\n"
         f"Blob Size: {myblob.length} bytes"
     )
+    postcode_data = pandas.read_csv(
+        "https://raw.githubusercontent.com/Elkfox/Australian-Postcode-Data/master/au_postcodes.csv",
+        dtype={"postcode": str},
+    )
+
     df = pandas.read_excel(
         io.BytesIO(myblob.read()),
         engine="openpyxl",
@@ -145,7 +150,13 @@ def main(myblob: func.InputStream):
     for col in check_columns:
         df[col].fillna(False, inplace=True)
     df["State"] = df["Postcode"].apply(map_postcode)
-
+    df = pandas.merge(
+        df,
+        postcode_data,
+        left_on=["Postcode", "Town_City"],
+        right_on=["postcode", "place_name"],
+        how="left",
+    ).drop(columns=["postcode", "place_name", "state_name", "state_code", "accuracy"])
     # Connect to Azure Table Store
     table_service = TableService(
         account_name=os.getenv("TABLE_STORAGE_ACCOUNT_NAME"),
