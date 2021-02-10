@@ -11,7 +11,9 @@ import pandas
 
 def camelKey(k):
     """Create a friendly camel-case key, e.g. Shoe_MAKER___Fox becomes ShoeMakerFox"""
-    camelKey = k.replace("_", " ").title().replace(" ", "")
+    camelKey = (
+        k.replace("_", " ").replace("/", " ").replace("-", " ").title().replace(" ", "")
+    )
 
     # Remove all the characters that are not allowed in table storage as property names
     return re.sub("\ |\?|\.|\!|\/|\;|\:|\(|\)", "", camelKey)
@@ -21,7 +23,8 @@ def map_postcode(postcode):
     if pandas.isna(postcode):
         return ""
     try:
-        postcode = int(postcode.replace("o", "0"))
+        if isinstance(postcode, str):
+            postcode = int(postcode.replace("o", "0"))
     except ValueError:  # Must be some other junk value
         return ""
     if (
@@ -70,7 +73,9 @@ def main(myblob: func.InputStream):
     )
 
     df.dropna(subset=["ABN"], inplace=True)  # Remove entries with no ABN
-
+    df.drop_duplicates(
+        subset=["ABN"], keep="last", inplace=True
+    )  # Remove duplicate entries and keep the last
     df["Town_City"] = df["Town_City"].apply(lambda x: str(x).title())
     df["Reporting_hours___Paid"].fillna(0, inplace=True)
     df["Reporting_hours___Unpaid"].fillna(0, inplace=True)
@@ -147,8 +152,10 @@ def main(myblob: func.InputStream):
         "Reporting_Obligations___VIC",
         "Reporting_Obligations___WA",
     )
+    col_names = list(df.columns)
     for col in check_columns:
-        df[col].fillna(False, inplace=True)
+        if col in col_names:
+            df[col].fillna(False, inplace=True)
     df["State"] = df["Postcode"].apply(map_postcode)
     df = pandas.merge(
         df,
