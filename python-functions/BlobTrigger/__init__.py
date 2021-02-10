@@ -17,7 +17,6 @@ def main(myblob: func.InputStream):
     df = pandas.read_excel(
         io.BytesIO(myblob.read()),
         engine="openpyxl",
-        index_col=0,
         true_values=("Y",),
         false_values=("n",),
     )
@@ -29,7 +28,7 @@ def main(myblob: func.InputStream):
     records = df.to_dict(orient="records")
     batch = TableBatch()
     for record in records:
-        entry = record | {"PartitionKey": myblob.name, "RowKey": record["ABN"]}
+        entry = record | {"PartitionKey": f"ais-{myblob.name}", "RowKey": record["ABN"]}
         batch.insert_entity(entry)
 
     table_service.commit_batch("ACN", batch)

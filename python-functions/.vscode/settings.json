@@ -6,5 +6,6 @@
     "azureFunctions.projectRuntime": "~3",
     "debug.internalConsoleOptions": "neverOpen",
     "python.pythonPath": ".venv/bin/python",
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "restructuredtext.languageServer.disabled": true
 }
