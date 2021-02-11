@@ -12,7 +12,7 @@ It will:
 - Convert the columns into Azure Table Storage sanitized property names
 - Upload the records to Azure Table Storage
 
-Both datasets used in this demo are under CC0 licenses,
+Both datasets used in this demo are under Creative Commons licenses,
 
 https://data.gov.au/search?organisation=Australian%20Charities%20and%20Not-for-profits%20Commission%20(ACNC)
 
