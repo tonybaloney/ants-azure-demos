@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "opencensus.ext.django.middleware.OpencensusMiddleware",
 ]
 
 ROOT_URLCONF = "antdemo.urls"
@@ -74,20 +75,24 @@ WSGI_APPLICATION = "antdemo.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
-DATABASES = {
-    "development": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    },
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django",
-        "USER": os.getenv("DATABASE_USERNAME"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": os.getenv("DATABASE_ADDRESS"),
-        "PORT": "5432",
-    },
-}
+if "DATABASE_ADDRESS" not in os.environ:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "django",
+            "USER": os.getenv("DATABASE_USERNAME"),
+            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+            "HOST": os.getenv("DATABASE_ADDRESS"),
+            "PORT": "5432",
+        },
+    }
 
 
 # Password validation
@@ -144,3 +149,11 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "demo", "static")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+INSTRUMENTATION_KEY = os.getenv("AZURE_INSIGHTS_KEY")
+OPENCENSUS = {
+    "TRACE": {
+        "SAMPLER": "opencensus.trace.samplers.ProbabilitySampler(rate=1)",
+        "EXPORTER": f"""AzureExporter(connection_string='{INSTRUMENTATION_KEY}')""",
+    }
+}
