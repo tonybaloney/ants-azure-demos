@@ -10,7 +10,7 @@
         "get",
         "post"
       ],
-      "route": "items/{item_id}"
+      "route": "users/{user_id}"
     },
     {
       "type": "http",
