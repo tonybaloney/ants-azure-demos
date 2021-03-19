@@ -1,13 +1,15 @@
-from functools import wraps
+from inspect import Parameter, Signature
 import azure.functions as az_functions
 import json
 
 
-def as_function(f):
-    @wraps(f)
-    def main(req: az_functions.HttpRequest) -> az_functions.HttpResponse:
+class FastApiWrapper:
+    def __init__(self, f) -> None:
+        self.f = f
+
+    def __call__(self, req: az_functions.HttpRequest) -> az_functions.HttpResponse:
         kwargs = req.route_params
-        response = f(**kwargs)
+        response = self.f(**kwargs)
         if isinstance(response, dict):
             response = json.dumps(response)
         return az_functions.HttpResponse(
@@ -15,4 +17,15 @@ def as_function(f):
             status_code=200,
         )
 
-    return main
+    @property
+    def __annotations__(self):
+        # TODO : Be clever about the annotations based on FastAPI specs
+        return self.f.__annotations__
+
+    @property
+    def __signature__(self):
+        return Signature(parameters=(Parameter(name="req", kind=1),))
+
+
+def as_function(f):
+    return FastApiWrapper(f)
