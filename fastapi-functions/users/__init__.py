@@ -1,8 +1,6 @@
-import fastapi
 from functions_helpers import as_function
 import mimesis
-
-app = fastapi.FastAPI()
+from api_app import app  # Our main API application
 
 
 @app.get("/users/{user_id}")
