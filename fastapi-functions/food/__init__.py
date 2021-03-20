@@ -14,4 +14,4 @@ def get_food(food_id: int):
     }
 
 
-main = as_function(get_food)
+main = as_function(get_food, app)
