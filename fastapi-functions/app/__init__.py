@@ -3,6 +3,14 @@ from .http_asgi import AsgiMiddleware
 import mimesis
 from api_app import app  # Our main API application
 from typing import Optional
+from pydantic import BaseModel
+
+
+class FoodItem(BaseModel):
+    id: int
+    vegetable: str
+    dish: str
+    drink: str
 
 
 @app.get("/food/{food_id}")
@@ -16,6 +24,11 @@ def get_food(
         "dish": food.dish(),
         "drink": food.drink(),
     }
+
+
+@app.post("/food/")
+def create_food(food: FoodItem):
+    return food
 
 
 @app.get("/users/{user_id}")
