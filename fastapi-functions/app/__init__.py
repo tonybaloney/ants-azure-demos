@@ -1,7 +1,21 @@
-from functions_helpers import coro_as_function
+import azure.functions as func
+from .http_asgi import AsgiMiddleware
 import mimesis
-from typing import Optional
 from api_app import app  # Our main API application
+from typing import Optional
+
+
+@app.get("/food/{food_id}")
+def get_food(
+    food_id: int,
+):
+    food = mimesis.Food()
+    return {
+        "food_id": food_id,
+        "vegetable": food.vegetable(),
+        "dish": food.dish(),
+        "drink": food.drink(),
+    }
 
 
 @app.get("/users/{user_id}")
@@ -17,4 +31,5 @@ async def read_item(user_id: int, locale: Optional[str] = None):
     }
 
 
-main = coro_as_function(read_item, app)
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+    return AsgiMiddleware(app).handle(req, context)
