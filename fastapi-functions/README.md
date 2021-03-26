@@ -1,22 +1,17 @@
 # FastAPI on Azure Functions
 
-This is a basic FastAPI route inside Azure Functions with a wrapper that converts Azure Functions Runtime requests into a call to the FastAPI route.
+This is a basic FastAPI application running on Azure Functions FaaS. 
+
+This demo would support FastAPI's full stack and instantiates Starlette's ASGI server framework.
 
 ## Layout
 
-- Each REST resource would have a submodule. E.g., `/api/food/` lives inside the `food/` submodule
-- Each resource/submodule describes its own `function.json`
-- Route parameters are shared between the Azure Functions runtime and the FastAPI route declaration
-- There is a shared "app" object for shared configuration (inside `api_app`)
-- Azure Functions runtime will call a function object-shim created by `functions_helpers.as_function`
+- The FastAPI app service is instantiated inside `api_app/`
+- The app routes are defined in `app/`, there are two examples, `users/{id}` and `food/{id}`
+- The Azure Functions descriptor allows all routes and HTTP verbs, since the routing is handled by FastAPI
+- The ASGI adaptor is in `app/http_asgi.py`, you could reuse this code in other projects
 
-## The shim
+## The ASGI endpoint
 
-This is a **quick prototype with lots of limitations** (I only had a couple of hours on Friday to work on it)
+This application works by wrapping the FastAPI ASGI application in small, ASGI service that sends/receives Azure Functions Worker HTTPRequest/HTTPResponse Objects.
 
-- Only tested with GET
-- Only tested with route params, not URL params
-
-## Unit tests
-
-Added a pytest test example in `tests/` to show how this would be unit tested. 
