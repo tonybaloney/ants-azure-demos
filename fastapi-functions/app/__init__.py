@@ -1,5 +1,5 @@
 import azure.functions as func
-from .http_asgi import AsgiMiddleware
+from azure.functions.http_asgi import AsgiMiddleware
 import mimesis
 from api_app import app  # Our main API application
 from typing import Optional
