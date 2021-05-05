@@ -1,3 +1,4 @@
 azure-cosmos
 fastapi
 ujson
+uvicorn
