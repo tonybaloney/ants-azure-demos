@@ -47,6 +47,16 @@ def get_users(database: DatabaseProxy):
     return users
 
 
+def _create_user(database: DatabaseProxy, user: User):
+    try:
+        new_user = user.dict()
+        new_user["id"] = user.username
+        database.get_container_client(container="userprofile").upsert_item()
+    except exceptions.CosmosHttpResponseError:
+        raise HTTPException(status_code=401, detail="Invalid request")
+    return
+
+
 # FastAPI specific code
 app = FastAPI()
 
@@ -63,3 +73,9 @@ def read_users():
     database = get_database()
     users = get_users(database=database)
     return users
+
+
+@app.post("/users/")
+def create_user(user: User):
+    database = get_database()
+    return _create_user(database=database, user=user)
