@@ -14,7 +14,7 @@ class FoodItem(BaseModel):
 
 
 @app.get("/food/{food_id}")
-def get_food(
+async def get_food(
     food_id: int,
 ):
     food = mimesis.Food()
@@ -27,7 +27,8 @@ def get_food(
 
 
 @app.post("/food/")
-def create_food(food: FoodItem):
+async def create_food(food: FoodItem):
+    # Write the food item to the database here.
     return food
 
 
