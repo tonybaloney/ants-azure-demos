@@ -9,6 +9,6 @@ mongo = PyMongo(app)
 
 @app.route("/")
 def home_page():
-    online_users = mongo.cx["django_cosmos"].users.find({"online": True})
+    online_users = mongo.cx["flask-cosmos"].users.find({"online": True})
     return render_template("index.html",
         users=online_users)
