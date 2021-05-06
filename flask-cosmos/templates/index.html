@@ -1,0 +1,7 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% for user in users %}
+  <h1>Hello {{ user }}!</h1>
+{% else %}
+  <h1>Hello, World!</h1>
+{% endfor %}
