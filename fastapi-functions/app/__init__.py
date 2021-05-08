@@ -1,7 +1,7 @@
 import azure.functions as func
 try:
     from azure.functions import AsgiMiddleware
-except ModuleNotFoundError:
+except ImportError:
     from _future.azure.functions._http_asgi import AsgiMiddleware
 
 import mimesis
