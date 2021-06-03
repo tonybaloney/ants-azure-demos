@@ -1,5 +1,9 @@
 import azure.functions as func
-from azure.functions.http_asgi import AsgiMiddleware
+try:
+    from azure.functions import AsgiMiddleware
+except ImportError:
+    from _future.azure.functions._http_asgi import AsgiMiddleware
+
 import mimesis
 from api_app import app  # Our main API application
 from typing import Optional
