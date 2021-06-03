@@ -7,5 +7,5 @@
     "debug.internalConsoleOptions": "neverOpen",
     "python.pythonPath": ".venv/bin/python",
     "python.formatting.provider": "black",
-    "restructuredtext.languageServer.disabled": true
+    "restructuredtext.languageServer.disabled": true,
 }

@@ -20,7 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET")
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET", "fghs8yf8weruft94u9f0h09erugh9erhg98erhg98erhg89hrg89e"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -150,10 +152,11 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "demo", "static")]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-INSTRUMENTATION_KEY = os.getenv("AZURE_INSIGHTS_KEY")
-OPENCENSUS = {
-    "TRACE": {
-        "SAMPLER": "opencensus.trace.samplers.ProbabilitySampler(rate=1)",
-        "EXPORTER": f"""AzureExporter(connection_string='{INSTRUMENTATION_KEY}')""",
+INSTRUMENTATION_KEY = os.getenv("AZURE_INSIGHTS_KEY", None)
+if INSTRUMENTATION_KEY:
+    OPENCENSUS = {
+        "TRACE": {
+            "SAMPLER": "opencensus.trace.samplers.ProbabilitySampler(rate=1)",
+            "EXPORTER": f"""opencensus.ext.azure.trace_exporter.AzureExporter(connection_string='{INSTRUMENTATION_KEY}')""",
+        }
     }
-}

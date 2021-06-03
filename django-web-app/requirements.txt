@@ -4,5 +4,5 @@ pytz==2021.1
 sqlparse==0.4.1
 psycopg2-binary==2.8.6
 django-storages[azure]==1.11.1
-opencensus-ext-django
+opencensus-ext-django 
 opencensus-ext-azure

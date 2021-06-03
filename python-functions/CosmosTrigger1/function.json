@@ -1,0 +1,15 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "type": "cosmosDBTrigger",
+      "name": "documents",
+      "direction": "in",
+      "leaseCollectionName": "leases",
+      "connectionStringSetting": "anthonyshawstorage_STORAGE",
+      "databaseName": "sfsdfsd",
+      "collectionName": "sdfsdf",
+      "createLeaseCollectionIfNotExists": false
+    }
+  ]
+}
