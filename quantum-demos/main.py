@@ -3,11 +3,25 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import os
+import time
+from typing import List, Sequence
+
 # Instantiate Workspace object which allows you to connect to the Workspace you've previously deployed in Azure.
 # Be sure to fill in the settings below which can be retrieved by running 'az quantum workspace show' in the terminal.
 from azure.quantum import Workspace
+from azure.quantum.optimization import (ParallelTempering, Problem,
+                                        ProblemType, Term)
 
-import os
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, BarColumn
+from rich.console import Console
+from rich.table import Table
+
+import numpy as np
+
+NUM_CONTAINERS = 100
+CONTAINER_MIN_WEIGHT = 1
+CONTAINER_MAX_WEIGHT = 50
 
 # Copy the settings for your workspace below
 workspace = Workspace(
@@ -15,11 +29,8 @@ workspace = Workspace(
     location = os.getenv('AZURE_LOCATION', 'westus')     # add the location of your Azure Quantum workspace (e.g. "westus")
 )
 
-# Take an array of container weights and return a Problem object that represents the cost function
-from typing import List
-from azure.quantum.optimization import Problem, ProblemType, Term
 
-def create_problem_for_container_weights(container_weights: List[int]) -> Problem:
+def create_problem_for_container_weights(container_weights: Sequence[int]) -> Problem:
     terms: List[Term] = []
 
     # Expand the squared summation
@@ -42,27 +53,24 @@ def create_problem_for_container_weights(container_weights: List[int]) -> Proble
     return Problem(name="Ship Sample Problem", problem_type=ProblemType.ising, terms=terms)
 
 # This array contains a list of the weights of the containers
-container_weights = [1, 5, 9, 21, 35, 5, 3, 5, 10, 11]
+rng = np.random.default_rng()
+container_weights = rng.integers(low=CONTAINER_MIN_WEIGHT, high=CONTAINER_MAX_WEIGHT, size=NUM_CONTAINERS)
 
 # Create a problem for the list of containers:
-problem = create_problem_for_container_weights(container_weights)
+problem1 = create_problem_for_container_weights(container_weights)
 
-# Submit problem to Azure Quantum using the ParallelTempering solver:
-from azure.quantum.optimization import ParallelTempering
-import time
 
 # Instantiate a solver to solve the problem.
-solver = ParallelTempering(workspace, timeout=100)
-
-# Optimize the problem
-print('Submitting problem...')
-start = time.time()
-result = solver.optimize(problem)
-timeElapsed = time.time() - start
-print(f'\nResult in {timeElapsed} seconds:\n{result}\n')
+parallel_solver = ParallelTempering(workspace, timeout=100)
 
 # Print out a summary of the results:
-def print_result_summary(result):
+def print_result_summary(result, console):
+    table = Table(title="Container Allocations")
+
+    table.add_column("Container", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Weight", style="magenta")
+    table.add_column("Ship", justify="right", style="green")
+
     # Print a summary of the result
     ship_a_weight = 0
     ship_b_weight = 0
@@ -77,16 +85,11 @@ def print_result_summary(result):
             ship = 'B'
             ship_b_weight += container_weight
 
-        print(f'Container {container} with weight {container_weight} was placed on Ship {ship}')
+        table.add_row(container, str(container_weight), ship)
 
+    console.print(table)
     print(f'\nTotal weights: \n\tShip A: {ship_a_weight} tonnes \n\tShip B: {ship_b_weight} tonnes\n')
 
-print_result_summary(result)
-
-# Improving the Cost Function
-# The cost function we've built works well so far, but let's take a closer look at the `Problem` that was generated:
-print(f'\nThe original problem has {len(problem.terms)} terms for {len(container_weights)} containers:')
-print(problem.terms)
 
 # We can reduce the number of terms by removing duplicates (see associated Jupyter notebook for details)
 # In code, this means a small modification to the create_problem_for_container_weights function:
@@ -108,13 +111,28 @@ def create_simplified_problem_for_container_weights(container_weights: List[int]
 
 # Check that this creates a smaller problem
 # Create the simplified problem
-simplified_problem = create_simplified_problem_for_container_weights(container_weights)
-print(f'\nThe simplified problem has {len(simplified_problem.terms)} terms')
+problem2 = create_simplified_problem_for_container_weights(container_weights)
 
-# Optimize the problem
-print('\nSubmitting simplified problem...')
-start = time.time()
-simplified_result = solver.optimize(simplified_problem)
-time_elapsed_simplified = time.time() - start
-print(f'\nResult in {time_elapsed_simplified} seconds:\n{simplified_result}\n')
-print_result_summary(simplified_result)
+job1 = parallel_solver.submit(problem1)
+job2 = parallel_solver.submit(problem2)
+
+console = Console()
+
+with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+
+        task1 = progress.add_task(f"[yellow]Processing {job1.details.name}", total=1000, start=True)
+        task2 = progress.add_task(f"[yellow]Processing {job2.details.name}", total=1000, start=True)
+
+        while not job1.has_completed() and not job2.has_completed():
+            time.sleep(0.01)
+            job1.refresh()
+            job2.refresh()
+
+print_result_summary(job1.get_results(), console)
+print_result_summary(job2.get_results(), console)

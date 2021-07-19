@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.7"
 azure-quantum = "^0.18.2106"
+rich = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
