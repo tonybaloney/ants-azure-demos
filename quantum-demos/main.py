@@ -3,17 +3,15 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import asyncio
 import os
-import time
 from typing import List, Sequence
 
 # Instantiate Workspace object which allows you to connect to the Workspace you've previously deployed in Azure.
 # Be sure to fill in the settings below which can be retrieved by running 'az quantum workspace show' in the terminal.
-from azure.quantum import Workspace
-from azure.quantum.optimization import (ParallelTempering, Problem,
-                                        ProblemType, Term)
-
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, BarColumn
+from azure.quantum.aio import Workspace
+from azure.quantum.aio.optimization import ParallelTempering, Problem, ProblemType
+from azure.quantum.optimization import Term
 from rich.console import Console
 from rich.table import Table
 
@@ -113,26 +111,17 @@ def create_simplified_problem_for_container_weights(container_weights: List[int]
 # Create the simplified problem
 problem2 = create_simplified_problem_for_container_weights(container_weights)
 
-job1 = parallel_solver.submit(problem1)
-job2 = parallel_solver.submit(problem2)
 
-console = Console()
+async def submit_problems():
+    # Schedule three calls *concurrently*:
+    results = await asyncio.gather(
+        parallel_solver.optimize(problem1),
+        parallel_solver.optimize(problem2)
+    )
 
-with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
+    console = Console()
+    print_result_summary(results[0], console)
+    print_result_summary(results[1], console)
 
-        task1 = progress.add_task(f"[yellow]Processing {job1.details.name}", total=1000, start=True)
-        task2 = progress.add_task(f"[yellow]Processing {job2.details.name}", total=1000, start=True)
 
-        while not job1.has_completed() and not job2.has_completed():
-            time.sleep(0.01)
-            job1.refresh()
-            job2.refresh()
-
-print_result_summary(job1.get_results(), console)
-print_result_summary(job2.get_results(), console)
+asyncio.run(submit_problems())
