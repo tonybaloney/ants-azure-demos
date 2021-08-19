@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["django-simple-demo.azurewebsites.net", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["remote-debug-test.azurewebsites.net", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "storages",
+    # "storages",
 ]
 
 MIDDLEWARE = [
@@ -51,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "opencensus.ext.django.middleware.OpencensusMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "antdemo.urls"
@@ -129,8 +130,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-DEFAULT_FILE_STORAGE = "antdemo.backend.storage.AzureMediaStorage"
-STATICFILES_STORAGE = "antdemo.backend.storage.AzureStaticStorage"
+# DEFAULT_FILE_STORAGE = "antdemo.backend.storage.AzureMediaStorage"
+# STATICFILES_STORAGE = "antdemo.backend.storage.AzureStaticStorage"
 
 AZURE_STORAGE_KEY = os.environ.get("AZURE_STORAGEACCOUNT_KEY", False)
 AZURE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGEACCOUNT_NAME", False)

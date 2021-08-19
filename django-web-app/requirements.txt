@@ -6,3 +6,4 @@ psycopg2-binary==2.8.6
 django-storages[azure]==1.11.1
 opencensus-ext-django 
 opencensus-ext-azure
+whitenoise
