@@ -50,7 +50,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "opencensus.ext.django.middleware.OpencensusMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
@@ -152,12 +151,3 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "demo", "static")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-INSTRUMENTATION_KEY = os.getenv("AZURE_INSIGHTS_KEY", None)
-if INSTRUMENTATION_KEY:
-    OPENCENSUS = {
-        "TRACE": {
-            "SAMPLER": "opencensus.trace.samplers.ProbabilitySampler(rate=1)",
-            "EXPORTER": f"""opencensus.ext.azure.trace_exporter.AzureExporter(connection_string='{INSTRUMENTATION_KEY}')""",
-        }
-    }
