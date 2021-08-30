@@ -1,0 +1,5 @@
+fastapi
+gunicorn
+uvicorn
+beanie
+python-dotenv
