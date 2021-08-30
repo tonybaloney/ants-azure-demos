@@ -1,0 +1,27 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Python: FastAPI",
+			"type": "python",
+			"request": "launch",
+			"module": "uvicorn",
+            "cwd": "${workspaceFolder}",
+			"args": [
+				"demo_app.main:app",
+				"--reload"
+			],
+		},
+        {
+			"name": "Python: Pytest",
+			"type": "python",
+			"request": "launch",
+			"module": "pytest",
+            "cwd": "${workspaceFolder}",
+			"args": [
+				"tests", 
+                "-vv"
+			],
+		}
+	]
+}
