@@ -1,9 +1,10 @@
-from typing import Optional
-
 import mimesis
 import mimesis.exceptions
-from demo_app.models import Address, Paged
+from beanie import PydanticObjectId
+from beanie.odm.operators.find.geospatial import Near
+from demo_app.models import Address, GeoJson2DPoint, Paged
 from fastapi import APIRouter
+from fastapi.exceptions import HTTPException
 
 address_router = APIRouter()
 
@@ -39,6 +40,37 @@ async def find_addresses(
     )
 
 
+@address_router.get("/{id}/", response_model=Address)
+async def get_location(id: PydanticObjectId) -> Address:
+    address = await Address.get(document_id=id)
+    if not address:
+        raise HTTPException(status_code=404)
+    return address
+
+
+@address_router.get("/{id}/nearby")
+async def get_nearby_locations(
+    id: PydanticObjectId, page_size: int = 100, page_start: int = 0
+) -> Paged[Address]:
+    address = await Address.get(document_id=id)
+    if not address:
+        raise HTTPException(status_code=404)
+    query = Address.find(
+        Near(
+            Address.geo,
+            longitude=address.geo.coordinates[0],
+            latitude=address.geo.coordinates[1],
+        )
+    )
+    number = await query.count()
+    results = await query.limit(page_size).skip(page_start).to_list()
+    return Paged(
+        number,
+        results,
+        page_size + page_start < number,
+    )
+
+
 @address_router.post("/seed")
 async def seed_addresses(count: int = 1000, locale: str = "en-us"):
     """
@@ -55,8 +87,9 @@ async def seed_addresses(count: int = 1000, locale: str = "en-us"):
                     street_name=address.street_name(),
                     city=address.city(),
                     country=address.country(),
-                    longitude=address.longitude(),
-                    latitude=address.latitude(),
+                    geo=GeoJson2DPoint(
+                        coordinates=(address.longitude(), address.latitude())
+                    ),
                     postal_code=address.postal_code(),
                 )
             )
