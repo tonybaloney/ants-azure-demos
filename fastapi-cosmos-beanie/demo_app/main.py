@@ -16,4 +16,4 @@ async def startup_event():
     await init_beanie(
         database=client[settings.mongo_db], document_models=__beanie_models__
     )
-    app.include_router(address_router, tags=["address"])
+    app.include_router(address_router, prefix="/address", tags=["address"])

@@ -3,3 +3,4 @@ gunicorn
 uvicorn
 beanie
 python-dotenv
+mimesis
