@@ -72,7 +72,7 @@ async def get_nearby_locations(
 
 
 @address_router.post("/seed")
-async def seed_addresses(count: int = 1000, locale: str = "en-us"):
+async def seed_addresses(count: int = 1000, locale: str = "en"):
     """
     Fill the addresses collection with dummy data.
     """

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Template Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <div class="container">
+      <h1>locations</h1>
+      <ul>
+        {% for l in locations %}
+        <li><a href="/locations/{{l.id}}">{{l.name}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </body>
+</html>
