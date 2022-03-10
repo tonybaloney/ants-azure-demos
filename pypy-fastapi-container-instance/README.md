@@ -9,26 +9,44 @@ using PyPy as the Python interpreter
 
 ## Deployment
 
+Setup some variables
+
+```console
+RG=my-web-app  # Resource group name
+ACR=myregistry1  # Azure Container Registry name
+IMAGE=my-web-app # Docker image name
+NAME=my-web-app # Application name, also used as the DNS record
+LOCATION=australiaeast # DC location
+```
+
 Create the Azure resource group and container registry:
 
 ```console
-az group create --location australiaeast --name pypy-testing
-az acr create --name pypytesting --resource-group pypy-testing --sku Basic --admin-enabled true
-az acr credential show --name pypytesting
+az group create --location $LOCATION --name $RG
+az acr create --name $ACR --resource-group $RG --sku Basic --admin-enabled true
+az acr credential show --name $ACR
 ```
 
 Sign in to the container registry with those credentials. Build and upload the Docker image:
 
 ```console
-docker login pypytesting.azurecr.io
-docker build -t fastapi-hello-world:1.0.0 .
-docker tag fastapi-hello-world:1.0.0 pypytesting.azurecr.io/fastapi-hello-world:1.0.0
-docker push pypytesting.azurecr.io/fastapi-hello-world -a
+docker login ${ACR}.azurecr.io
+docker build -t ${IMAGE}:1.0.0 .
+docker tag ${IMAGE}:1.0.0 ${ACR}.azurecr.io/${IMAGE}:1.0.0
+docker push ${ACR}.azurecr.io/${IMAGE} -a
 ```
 
 Create an Azure Container Instance and deploy from the Docker image:
 
 ```console
-az container create --resource-group pypy-testing --name pypy-fastapi-hello-world --image pypytesting.azurecr.io/fastapi-hello-world:1.0.0 --dns-name-label pypy-fastapi-hello-world --ports 80
-az container attach --resource-group pypy-testing --name pypy-fastapi-hello-world
+az container create --resource-group $RG --name $NAME --image ${ACR}.azurecr.io/${IMAGE}:1.0.0 --dns-name-label $NAME --ports 80
+az container attach --resource-group $RG --name $NAME
+open http://${NAME}.${LOCATION}.azurecontainer.io/
+```
+
+
+Optional: Add a CNAME record to an Azure DNS managed zone
+
+```console
+az network dns record-set cname set-record -g $RG -z www.mysite.com  -n MyRecordSet -c ${NAME}.${LOCATION}.azurecontainer.io
 ```
