@@ -44,7 +44,6 @@ az container attach --resource-group $RG --name $NAME
 open http://${NAME}.${LOCATION}.azurecontainer.io/
 ```
 
-
 Optional: Add a CNAME record to an Azure DNS managed zone
 
 ```console

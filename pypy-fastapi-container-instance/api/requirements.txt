@@ -1,2 +1,5 @@
 fastapi
 uvicorn
+tortoise-orm
+mimesis
+aiosqlite

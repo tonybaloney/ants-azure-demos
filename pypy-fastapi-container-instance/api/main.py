@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from tortoise.contrib.fastapi import register_tortoise
 
 
 # CORS origins
@@ -28,4 +29,10 @@ from . import routes  # NOQA
 
 @app.on_event("startup")
 async def startup_event():
-    pass 
+    register_tortoise(
+        app,
+        db_url=settings.db_url,
+        modules={"models": ["api.db_models"]},
+        generate_schemas=True,
+        add_exception_handlers=True,
+    ) 
